@@ -8,7 +8,7 @@ const CanadaPRForm = () => {
   const [status, setStatus] = useState("idle");
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setProgress(10);

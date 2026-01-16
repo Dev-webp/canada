@@ -4,9 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import React from "react";
 
-interface TrustedVisaSectionProps {}
-
-const TrustedVisaSection: React.FC<TrustedVisaSectionProps> = () => {
+const TrustedVisaSection: React.FC = () => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactElement } from 'react';
 import { motion } from 'framer-motion';
 import { FaFileAlt, FaPassport, FaMapMarkedAlt, FaChartLine, FaHandshake, FaAward } from "react-icons/fa";
 import CountUp from 'react-countup';
@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 interface IconContent {
   id: number;
-  icon: JSX.Element;
+  icon: ReactElement;
   label: string;
   points: string[];
 }
@@ -63,7 +63,7 @@ const fadeUp = {
     transition: {
       delay: i * 0.2,
       duration: 0.6,
-      ease: 'easeOut',
+      ease: [0.42, 0, 0.58, 1], // cubic-bezier for 'easeOut'
     },
   }),
 };
