@@ -61,7 +61,6 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
     }
     
     const segmentAngle = 360 / PRIZES.length;
-    // Slow 5 second spin duration
     const targetRotation = 2160 + (360 - (PRIZES.indexOf(selected) * segmentAngle + segmentAngle / 2));
     
     if (wheelRef.current) {
@@ -140,28 +139,28 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
             <div className="absolute -right-2 top-1/2 -translate-y-1/2 z-50 text-4xl">👈</div>
             <div
               ref={wheelRef}
-              className="w-full h-full rounded-full border-[6px] lg:border-[12px] border-yellow-500 relative overflow-hidden shadow-[0_0_40px_rgba(251,191,36,0.4)]"
+              className="w-full h-full rounded-full border-[6px] lg:border-[10px] border-white relative overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.2)]"
               style={{ 
-                background: `conic-gradient(${PRIZES.map((p, i) => 
-                  `${p.color} ${(i * 360) / PRIZES.length}deg ${((i + 1) * 360) / PRIZES.length}deg`
+                background: `conic-gradient(from 0deg, ${PRIZES.map((p, i) => 
+                  `${p.color} ${(i * 360) / PRIZES.length}deg, ${p.color} ${((i + 1) * 360) / PRIZES.length - 1}deg, #ffffff ${((i + 1) * 360) / PRIZES.length - 1}deg, #ffffff ${((i + 1) * 360) / PRIZES.length}deg`
                 ).join(", ")})` 
               }}
             >
               {PRIZES.map((p, i) => (
                 <div 
                   key={i} 
-                  className="absolute top-1/2 left-1/2 w-1/2 -translate-y-1/2 origin-left flex justify-end pr-3 lg:pr-10" 
+                  className="absolute top-1/2 left-1/2 w-1/2 -translate-y-1/2 origin-left flex justify-end pr-4 lg:pr-12" 
                   style={{ transform: `rotate(${(i * 360) / PRIZES.length + (360 / PRIZES.length / 2)}deg)` }}
                 >
-                  <span className="text-[2.5vw] lg:text-[12px] font-black text-white uppercase text-right leading-tight drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">
+                  <span className="text-[2.8vw] lg:text-[13px] font-black text-white uppercase text-right leading-tight tracking-wider drop-shadow-[0_3px_3px_rgba(0,0,0,0.8)]">
                     {p.label}
                   </span>
                 </div>
               ))}
             </div>
             <div className="absolute inset-0 flex items-center justify-center z-20">
-              <div className="w-[18%] h-[18%] bg-white rounded-full border-2 border-yellow-500 flex items-center justify-center p-1 shadow-2xl">
-                <img src="/logo-vjc.png" alt="Logo" className="w-full h-full object-contain" />
+              <div className="w-[20%] h-[20%] bg-white rounded-full border-4 border-white flex items-center justify-center p-1 shadow-2xl">
+                <img src="/vjclogo-1.png" alt="Logo" className="w-full h-full object-contain" />
               </div>
             </div>
           </div>
@@ -175,23 +174,52 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
                 <div className="text-center lg:text-left">
                   <h3 className="text-3xl lg:text-6xl font-black text-white leading-none uppercase">Spin To <span className="text-yellow-500">Win!</span></h3>
                 </div>
-                <div className="space-y-3">
+                {/* RELEVANT MOBILE INPUTS HERE */}
+                <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500" size={16} />
-                    <input type="text" placeholder="Full Name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-4 pl-12 bg-white rounded-xl text-black font-bold text-sm" />
+                    <input 
+                      type="text" 
+                      placeholder="Full Name" 
+                      autoComplete="name"
+                      value={formData.name} 
+                      onChange={e => setFormData({...formData, name: e.target.value})} 
+                      className="w-full p-4 pl-12 bg-white rounded-xl text-black font-bold text-sm" 
+                    />
                   </div>
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500" size={16} />
-                    <input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full p-4 pl-12 bg-white rounded-xl text-black font-bold text-sm" />
+                    <input 
+                      type="email" 
+                      placeholder="Email Address (Gmail)" 
+                      autoComplete="email"
+                      inputMode="email"
+                      value={formData.email} 
+                      onChange={e => setFormData({...formData, email: e.target.value})} 
+                      className="w-full p-4 pl-12 bg-white rounded-xl text-black font-bold text-sm" 
+                    />
                   </div>
                   <div className="relative">
                     <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500" size={16} />
-                    <input type="tel" placeholder="WhatsApp Number" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full p-4 pl-12 bg-white rounded-xl text-black font-bold text-sm" />
+                    <input 
+                      type="tel" 
+                      placeholder="WhatsApp Number" 
+                      autoComplete="tel"
+                      inputMode="tel"
+                      value={formData.phone} 
+                      onChange={e => setFormData({...formData, phone: e.target.value})} 
+                      className="w-full p-4 pl-12 bg-white rounded-xl text-black font-bold text-sm" 
+                    />
                   </div>
-                  <button onClick={startSpin} disabled={!formData.name || !formData.phone || !formData.email || isSpinning} className="w-full py-4 bg-yellow-500 text-black font-black text-lg rounded-xl shadow-xl active:scale-95 disabled:opacity-50 uppercase">
+                  <button 
+                    onClick={startSpin} 
+                    type="submit"
+                    disabled={!formData.name || !formData.phone || !formData.email || isSpinning} 
+                    className="w-full py-4 bg-yellow-500 text-black font-black text-lg rounded-xl shadow-xl active:scale-95 disabled:opacity-50 uppercase"
+                  >
                     {isSpinning ? "Spinning..." : "Get My Offer 🎯"}
                   </button>
-                </div>
+                </form>
                 <button onClick={() => setShowRules(true)} className="flex items-center gap-2 text-[10px] text-yellow-500/80 underline uppercase font-bold mx-auto lg:mx-0"><Info size={12} /> View Rules</button>
               </motion.div>
             ) : (

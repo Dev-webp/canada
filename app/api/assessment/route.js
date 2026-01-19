@@ -26,7 +26,7 @@ export async function POST(request) {
     await transporter.sendMail({
       from: `"VJC Overseas" <${process.env.EMAIL_FROM}>`,
       to: process.env.EMAIL_USER,
-      subject: `🇨🇦 NEW Canada PR Lead - ${name}`,
+      subject: ` NEW Canada PR Lead - ${name}`,
       html: `
         <div style="font-family: Arial, sans-serif; border: 1px solid #ddd; padding: 20px;">
           <h2 style="color: #b30000;">New Canada PR Assessment Lead</h2>

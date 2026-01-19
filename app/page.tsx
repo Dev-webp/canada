@@ -19,10 +19,10 @@ export default function Home() {
            Canada-pr-2026
           </Link>
           <Link
-            href="/canada-pr-2026"
+            href="/canada-pr-from-india"
             className="border-4 border-gray-800 hover:bg-gray-800 text-gray-800 hover:text-white px-12 py-6 text-xl font-semibold rounded-lg shadow-xl transition-all duration-300 font-times"
           >
-            All Services
+           canada pr from india
           </Link>
         </div>
       </div>

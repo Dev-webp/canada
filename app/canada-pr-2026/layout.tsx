@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Script from "next/script";
 
 export const metadata: Metadata = {
-   title: 'Canada Permanent Residency Visa| Canada PR Visa Process Requirements Free Eligibility ',
-    description: 'Apply for Canada Permanent Residence Visa and Check your Free Eligibility for Canada PR Visa Process and Requirements or Apply Immigration for Canada Express Entry and PNP Program for High Pay Skilled Workers in Canada also know the Benefits of Canada PR Visa Process Online and How to Apply for Canada PR Visa Online with Best Canada Permanent Residency - PR Visa Immigration Consultants in Hyderabad and Bangalore for fast Process ',
-    keywords: 'Canada Permanent Residency Visa, Canada PR Visa, Canada PR Visa Process, How to Apply for Canada PR Visa Online, Apply Canada PR Visa Online, Check Canada PR Visa Eligibility, Free Canada PR Visa Eligibility, Migrate To Canada, Canada Permanent Resident Visa, Canada Express Entry Program, Canada Skilled Worker Visa, Apply for Canada Skilled Worker Visa Online, Express Entry PR Visa Process, Canada PNP Program Online, Documents for Canada PR Visa, Permanent Residence Visa for Canada, PR Visa, Permanent Residence Visa for Canada',
+   title: 'Canada PR from India | Apply Canada Permanent Residency Visa ',
+    description: 'Get Canada PR from India with expert guidance from VJC Overseas. We help you check eligibility, prepare documents, submit Express Entry/PNP applications, improve CRS score, avoid scams, and fast-track your permanent residency process. Explore study, work & settlement opportunities in Canada with trusted immigration support. Free profile evaluation & step-by-step assistance.',
+    keywords: 'Canada PR from India,Canada PR Visa,Canada Immigration from India,Express Entry Canada PR,Canada PR Process 2026,Canada Permanent Residency,Canada PR Requirements,Canada PR Eligibility,Apply Canada PR online,Canada immigration consultant India,Canada work permit from India,Canada job & PR,Canada PR after work experience,Canada skilled worker PR,Canada Express Entry jobs,How to apply Canada PR from India,Canada PR documents list,Canada PR eligibility points calculator,Canada PR with job offer,Canada PR timeline from India',
 
 };
 

@@ -54,7 +54,7 @@ const PremiumCanadaForm: React.FC = () => {
 
       if (response.ok) {
         setSubmitStatus('success');
-        setTimeout(() => router.push("/canada-pr-score-check/thankyou"), 1500);
+        setTimeout(() => router.push("/canada-pr-from-india/thankyou"), 1500);
       } else {
         throw new Error('Submission failed');
       }
