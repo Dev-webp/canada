@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
-import { X, MessageSquare, Mail, User, Info, Loader2 } from "lucide-react";
+import { X, MessageSquare, Mail, User, Info, Loader2, AlertCircle } from "lucide-react";
 
 const PRIZES = [
   { label: "10% FLAT DISCOUNT", color: "#1e40af", weight: 25 },
@@ -27,7 +27,8 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
   const [resultPrize, setResultPrize] = useState<typeof PRIZES[0] | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isSendingMail, setIsSendingMail] = useState(false);
-  
+  const [error, setError] = useState<string | null>(null); // New state for error handling
+
   const wheelRef = useRef<HTMLDivElement>(null);
   const spinSound = useRef<HTMLAudioElement | null>(null);
   const winSound = useRef<HTMLAudioElement | null>(null);
@@ -37,9 +38,41 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
     winSound.current = new Audio("/win.mp3");
   }, []);
 
-  const startSpin = () => {
+  // New validation logic using your Redis API
+  const checkUserExists = async () => {
+    try {
+      const response = await fetch("/api/assessment/check-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          phone: formData.phone,
+        }),
+      });
+      const data = await response.json();
+      return data.exists;
+    } catch (err) {
+      console.error("Redis check failed:", err);
+      return false; // Fail open or handle as needed
+    }
+  };
+
+  const startSpin = async () => {
     if (!formData.name || !formData.phone || !formData.email || isSpinning) return;
+    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+    setError(null);
+    setIsSpinning(true);
+
+    // STEP 1: Check Redis before allowing the spin
+    const alreadyPlayed = await checkUserExists();
     
+    if (alreadyPlayed) {
+      setError("This email or phone has already been used to spin!");
+      setIsSpinning(false);
+      return;
+    }
+
+    // STEP 2: Logic for selecting prize
     const totalWeight = PRIZES.reduce((acc, p) => acc + p.weight, 0);
     let random = Math.random() * totalWeight;
     let selected = PRIZES[0];
@@ -52,7 +85,6 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
     }
 
     setResultPrize(selected);
-    setIsSpinning(true);
     setStep("spinning");
     
     if (spinSound.current) {
@@ -87,6 +119,7 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
 
       setIsSendingMail(true);
       try {
+        // This endpoint should both send mail AND save the user to Redis
         await fetch("/api/assessment/spin-form", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -94,11 +127,12 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
             name: formData.name,
             email: formData.email,
             phone: formData.phone,
-            prize: selected.label
+            prize: selected.label,
+            sourceUrl: currentUrl,
           }),
         });
       } catch (err) {
-        console.error("Mail trigger failed:", err);
+        console.error("Final registration failed:", err);
       } finally {
         setIsSendingMail(false);
       }
@@ -110,6 +144,7 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
       wheelRef.current.style.transition = "none";
       wheelRef.current.style.transform = "rotate(0deg)";
     }
+    setError(null);
     setStep("form");
   };
 
@@ -123,7 +158,6 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
 
       <div className="relative z-10 w-full h-full max-w-5xl flex flex-col lg:flex-row overflow-hidden ">
         
-        {/* CLOSE BUTTON - MOBILE */}
         <div className="absolute top-0 inset-x-0 p-4 flex justify-between items-center z-[100] lg:hidden">
           <span className="text-yellow-500 font-black tracking-tighter text-sm uppercase">VJC Overseas</span>
           <button onClick={onClose} className="bg-yellow-500 text-black p-1.5 rounded-full active:scale-90">
@@ -131,7 +165,6 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
           </button>
         </div>
 
-        {/* WHEEL SECTION */}
         <div className="flex-1 flex flex-col items-center justify-center p-4 pt-12 lg:pt-4">
           <h2 className="hidden lg:block text-xl font-black text-yellow-500 tracking-[0.3em] mb-10 uppercase">VJC Overseas Future Wheel</h2>
           
@@ -166,7 +199,6 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
           </div>
         </div>
 
-        {/* FORM / RESULT SECTION */}
         <div className="flex-1 flex flex-col justify-center p-6 lg:p-12 bg-black/60 lg:bg-transparent backdrop-blur-md lg:backdrop-blur-none rounded-t-[40px] lg:rounded-none">
           <AnimatePresence mode="wait">
             {step !== "result" ? (
@@ -174,7 +206,14 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
                 <div className="text-center lg:text-left">
                   <h3 className="text-3xl lg:text-6xl font-black text-white leading-none uppercase">Spin To <span className="text-yellow-500">Win!</span></h3>
                 </div>
-                {/* RELEVANT MOBILE INPUTS HERE */}
+
+                {/* Error Message Display */}
+                {error && (
+                  <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} className="bg-red-500/20 border border-red-500 text-red-200 p-3 rounded-lg flex items-center gap-2 text-sm font-bold">
+                    <AlertCircle size={16} /> {error}
+                  </motion.div>
+                )}
+
                 <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500" size={16} />
@@ -215,9 +254,11 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
                     onClick={startSpin} 
                     type="submit"
                     disabled={!formData.name || !formData.phone || !formData.email || isSpinning} 
-                    className="w-full py-4 bg-yellow-500 text-black font-black text-lg rounded-xl shadow-xl active:scale-95 disabled:opacity-50 uppercase"
+                    className="w-full py-4 bg-yellow-500 text-black font-black text-lg rounded-xl shadow-xl active:scale-95 disabled:opacity-50 uppercase flex items-center justify-center gap-2"
                   >
-                    {isSpinning ? "Spinning..." : "Get My Offer 🎯"}
+                    {isSpinning ? (
+                      <><Loader2 className="animate-spin" /> Checking...</>
+                    ) : "Get My Offer 🎯"}
                   </button>
                 </form>
                 <button onClick={() => setShowRules(true)} className="flex items-center gap-2 text-[10px] text-yellow-500/80 underline uppercase font-bold mx-auto lg:mx-0"><Info size={12} /> View Rules</button>
@@ -244,13 +285,11 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
           </AnimatePresence>
         </div>
 
-        {/* CLOSE BUTTON - DESKTOP */}
         <button onClick={onClose} className="hidden lg:block absolute top-8 right-8 text-white/50 hover:text-white transition-colors active:scale-90">
           <X size={32} />
         </button>
       </div>
 
-      {/* RULES POPUP */}
       <AnimatePresence>
         {showRules && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90 p-6 backdrop-blur-sm">
@@ -258,6 +297,10 @@ export default function SpinWheel({ onClose }: SpinWheelProps) {
               <button onClick={() => setShowRules(false)} className="absolute top-4 right-4 text-gray-500"><X size={20} /></button>
               <h4 className="text-yellow-500 font-black text-xl mb-4 uppercase">Rules</h4>
               <ul className="text-gray-300 text-sm space-y-3 font-medium">
+                <li>• One Phone Number One Offer.</li>
+                <li>
+                  • One Email One Offer.
+                </li>
                 <li>• One User One Offer only.</li>
                 <li>• Applicable to Primary Applicant only.</li>
                 <li>• Offers are non-transferable.</li>

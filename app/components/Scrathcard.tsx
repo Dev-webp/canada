@@ -37,24 +37,31 @@ export default function VJCPromotionCard({ onClose }: { onClose: () => void }) {
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
+    // Set canvas size explicitly to prevent scrolling issues
+    const size = 240;
+    canvas.width = size;
+    canvas.height = size;
+
     // Create Gold Gradient Layer
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    const gradient = ctx.createLinearGradient(0, 0, size, size);
     gradient.addColorStop(0, "#D4AF37"); 
     gradient.addColorStop(0.5, "#FBF5E6"); 
     gradient.addColorStop(1, "#C5A028"); 
     
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.roundRect(0, 0, canvas.width, canvas.height, 24);
+    ctx.roundRect(0, 0, size, size, 24);
     ctx.fill();
 
     // Add Scratch Text
     ctx.fillStyle = "#453500";
     ctx.font = "bold 18px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("SCRATCH GOLD TO WIN 🍁", canvas.width / 2, canvas.height / 2 + 6);
+    ctx.fillText("SCRATCH GOLD TO WIN 🍁", size / 2, size / 2 + 6);
 
     const handleScratchNative = (e: MouseEvent | TouchEvent) => {
+      e.preventDefault(); // Prevent scrolling on touch
+      
       const rect = canvas.getBoundingClientRect();
       let x: number, y: number;
       
@@ -74,7 +81,7 @@ export default function VJCPromotionCard({ onClose }: { onClose: () => void }) {
       ctx.fill();
 
       // Calculate percentage scratched
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, size, size);
       const pixels = imageData.data;
       let transparent = 0;
       for (let i = 3; i < pixels.length; i += 4) {
@@ -89,11 +96,19 @@ export default function VJCPromotionCard({ onClose }: { onClose: () => void }) {
       }
     };
 
+    // Prevent touch scrolling on canvas
+    const preventDefault = (e: TouchEvent) => e.preventDefault();
+    
     canvas.addEventListener("mousemove", handleScratchNative);
+    canvas.addEventListener("touchstart", preventDefault, { passive: false });
     canvas.addEventListener("touchmove", handleScratchNative, { passive: false });
+    canvas.addEventListener("touchend", preventDefault, { passive: false });
+    
     return () => {
       canvas.removeEventListener("mousemove", handleScratchNative);
+      canvas.removeEventListener("touchstart", preventDefault);
       canvas.removeEventListener("touchmove", handleScratchNative);
+      canvas.removeEventListener("touchend", preventDefault);
     };
   }, []);
 
@@ -122,7 +137,7 @@ export default function VJCPromotionCard({ onClose }: { onClose: () => void }) {
         body: JSON.stringify({ 
           ...formData, 
           prize,
-          sourceUrl: exactUrl // Sending the exact page URL here
+          sourceUrl: exactUrl
         }),
       });
     } catch (err) {
@@ -135,75 +150,81 @@ export default function VJCPromotionCard({ onClose }: { onClose: () => void }) {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-[2.5rem] overflow-hidden max-w-sm w-full shadow-2xl relative"
+        className="bg-white rounded-[2.5rem] overflow-hidden max-w-sm w-full shadow-2xl relative max-h-[90vh] flex flex-col"
       >
         <button 
           onClick={onClose} 
-          className="absolute top-4 right-4 text-white hover:rotate-90 transition-transform z-[60] bg-black/20 rounded-full p-1"
+          className="absolute top-4 right-4 text-white hover:rotate-90 transition-transform z-[60] bg-blue-400 backdrop-blur-sm rounded-full p-1"
         >
           <IoClose size={24} />
         </button>
 
-        {/* LOGO SECTION - Flush to top */}
-        <div className="bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center overflow-hidden">
+        {/* LOGO SECTION */}
+        <div className="bg-white flex items-center justify-center overflow-hidden ">
           <img 
             src="/vjclogo-1.png" 
             alt="VJC Overseas" 
             className="h-32 w-auto object-contain brightness-110 drop-shadow-lg" 
           />
         </div>
+        <div className="h-1 bg-gradient-to-r from-orange-500 via-blue-400 to-orange-500 rounded-full shadow-sm"></div>
 
-        <div className="p-6">
+       
+        {/* WHITE CONTENT SECTION */}
+        <div className="flex-1 p-6 overflow-y-auto">
           <AnimatePresence mode="wait">
             {!submitted ? (
-              <motion.div key="main-content">
+              <motion.div key="main-content" className="min-h-[400px]">
                 {!showForm ? (
                   <div className="text-center">
                     <h3 className="text-xl font-black text-slate-800 mb-0.5 italic">LUCKY SCRATCH</h3>
-                    <p className="text-red-600 text-[10px] mb-4 font-bold tracking-widest uppercase">Win Your Canada PR Gift</p>
+                    <p className="text-orange-500 text-[10px] mb-6 font-bold tracking-widest uppercase">Win Your Canada PR Gift</p>
 
-                    <div className="relative w-60 h-60 mx-auto">
+                    <div className="relative w-60 h-60 mx-auto flex-shrink-0">
                       {/* Revealed Prize (Behind Canvas) */}
-                      <div className="absolute inset-0 bg-red-50 rounded-3xl flex flex-col items-center justify-center p-6 text-center border-2 border-red-100">
+                      <div className="absolute inset-0 bg-orange-50 rounded-3xl flex flex-col items-center justify-center p-6 text-center border-2 border-orange-100">
                         <span className="text-4xl mb-2">🎁</span>
-                        <p className="text-slate-800 font-bold text-lg leading-tight">{prize}</p>
+                        <p className="text-slate-800 font-bold text-lg leading-tight px-2">unlock ?</p>
                       </div>
                       {/* Scratch Surface */}
-                      <canvas ref={canvasRef} width={240} height={240} className="absolute inset-0 cursor-crosshair rounded-3xl shadow-xl" />
+                      <canvas 
+                        ref={canvasRef} 
+                        className="absolute inset-0 cursor-crosshair rounded-3xl shadow-xl touch-none select-none" 
+                      />
                     </div>
 
-                    <div className="mt-4 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                       <motion.div className="h-full bg-yellow-500" animate={{ width: `${percentage}%` }} />
+                    <div className="mt-6 w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                      <motion.div className="h-full bg-orange-500" animate={{ width: `${percentage}%` }} transition={{ duration: 0.3 }} />
                     </div>
                   </div>
                 ) : (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                    <div className="text-center mb-5">
+                    <div className="text-center mb-6">
                       <h3 className="text-2xl font-black text-slate-800 uppercase">You Won! 🎊</h3>
                       <p className="text-slate-500 text-sm">Enter details to unlock your reward</p>
                     </div>
-                    <form onSubmit={onFinalSubmit} className="space-y-3">
+                    <form onSubmit={onFinalSubmit} className="space-y-4">
                       <input 
                         required 
                         placeholder="Full Name" 
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-red-500 text-sm" 
+                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-orange-500 text-sm focus:border-orange-500 transition-all" 
                         onChange={e => setFormData({...formData, name: e.target.value})} 
                       />
                       <input 
                         required 
                         type="email" 
                         placeholder="Email Address" 
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-red-500 text-sm" 
+                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-orange-500 text-sm focus:border-orange-500 transition-all" 
                         onChange={e => setFormData({...formData, email: e.target.value})} 
                       />
                       <input 
                         required 
                         type="tel" 
                         placeholder="WhatsApp Number" 
-                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-red-500 text-sm" 
+                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 ring-orange-500 text-sm focus:border-orange-500 transition-all" 
                         onChange={e => setFormData({...formData, phone: e.target.value})} 
                       />
-                      <button className="w-full bg-red-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all text-sm tracking-wide">
+                      <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all text-sm tracking-wide">
                         CLAIM MY GIFT NOW <FaCheckCircle className="inline ml-1" />
                       </button>
                     </form>
@@ -212,21 +233,21 @@ export default function VJCPromotionCard({ onClose }: { onClose: () => void }) {
               </motion.div>
             ) : (
               <motion.div key="success" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
-                <div className="bg-slate-900 rounded-[2rem] p-5 text-white mb-5 border-b-4 border-yellow-500">
-                  <h4 className="text-[9px] text-yellow-500 font-black mb-1 uppercase tracking-widest">Official Prize</h4>
+                <div className="bg-slate-900 rounded-[2rem] p-6 text-white mb-6 border-b-4 border-orange-500">
+                  <h4 className="text-[9px] text-orange-400 font-black mb-1 uppercase tracking-widest">Official Prize</h4>
                   <h2 className="text-lg font-bold mb-3">{prize}</h2>
                   <p className="text-[10px] opacity-60 italic">Reserved for: {formData.name}</p>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <a 
                     href={`https://wa.me/919160449000?text=Hi, I won ${prize}!`} 
-                    className="flex items-center justify-center gap-2 bg-[#25D366] text-white font-black py-4 rounded-xl shadow-xl text-sm"
+                    className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#25D366]/90 text-white font-black py-4 rounded-xl shadow-xl text-sm transition-all"
                   >
                     <FaWhatsapp size={18}/> CLAIM ON WHATSAPP
                   </a>
                   <button 
                     onClick={onClose} 
-                    className="text-slate-400 text-[10px] font-bold uppercase tracking-widest"
+                    className="text-orange-500 text-[10px] font-bold uppercase tracking-widest hover:text-slate-600 transition-colors"
                   >
                     Close
                   </button>
